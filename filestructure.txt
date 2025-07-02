@@ -1,0 +1,12 @@
+/project
+├── /application
+│   ├── __init__.py - create_app() lives here
+│   ├── extensions.py
+│   ├── /blueprints
+│		│		├──/customer
+│		│				├──__init__.py  - Initializt User Blueprint
+│		│				├── routes.py  - Create User Controllers/routes
+│		│				└── customerSchemas.py
+│   └── models.py
+├── app.py
+└── config.py
