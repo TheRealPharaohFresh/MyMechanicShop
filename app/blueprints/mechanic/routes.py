@@ -29,9 +29,19 @@ def create_mechanic():
 
 # Get all mechanics 
 @mechanics_bp.route("/", methods=["GET"])
+# @cache.cached(timeout=60)  # Cache for 60 seconds
 def get_mechanics():
-    mechanics = db.session.execute(select(Mechanic)).scalars().all()
-    return mechanics_schema.jsonify(mechanics), 200  # ✅ Corrected schema
+    try:
+        page = int(request.args.get("page"))
+        per_page = int(request.args.get("per_page"))
+        query = select(Mechanic)
+        mechanics = db.paginate(query, page=page, per_page=per_page).items
+        return mechanics_schema.jsonify(mechanics), 200
+    except Exception as e:  # Catch specific exceptions if possible
+        query = select(Mechanic)
+        mechanics = db.session.execute(query).scalars().all()
+    return mechanics_schema.jsonify(mechanics), 200
+
 
 
 # Get a mechanic by ID
@@ -71,3 +81,30 @@ def delete_mechanic(mechanic_id):
     db.session.delete(mechanic)
     db.session.commit()
     return jsonify({"message": "Mechanic deleted successfully"}), 204
+
+#most popular mechanics
+@mechanics_bp.route("/popular", methods=["GET"])
+def get_popular_mechanics():
+    query = select(Mechanic)
+    mechanics = db.session.execute(query).scalars().all()
+
+    mechanics.sort(key=lambda m: len(m.service_tickets), reverse=True)
+    
+    return mechanics_schema.jsonify(mechanics[:5]), 200  # Return top 5 mechanics by ticket count
+
+
+
+@mechanics_bp.route("/search", methods=["GET"])
+def search_mechanics():
+    name = request.args.get("name")
+
+    query = select(Mechanic).where(Mechanic.name.like(f"%{name}%")) if name else select(Mechanic)
+    mechanics = db.session.execute(query).scalars().all()
+
+
+    return (
+    (mechanics_schema.jsonify(mechanics), 200)
+    if mechanics
+    else (jsonify({"message": "No mechanics found"}), 404)
+)
+

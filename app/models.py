@@ -23,6 +23,7 @@ service_mechanic = db.Table(
 )
 
 
+
 class Customer(Base):
     __tablename__ = 'customers'
 
@@ -33,7 +34,6 @@ class Customer(Base):
     password: Mapped[str] = mapped_column(db.String(255), nullable=False)
 
     service_tickets: Mapped[List['Service_Ticket']] = db.relationship(back_populates="customer")
-
 
 
 class Service_Ticket(Base):
@@ -48,6 +48,15 @@ class Service_Ticket(Base):
     customer: Mapped[Customer] = db.relationship(back_populates="service_tickets")
     mechanics: Mapped[List['Mechanic']] = db.relationship("Mechanic", secondary=service_mechanic, back_populates="service_tickets")
 
+    inventory_associations: Mapped[List["ServiceTicketInventory"]] = db.relationship(
+        "ServiceTicketInventory",
+        back_populates="service_ticket",
+        cascade="all, delete-orphan"
+    )
+
+    @property
+    def inventory_parts(self):
+        return [assoc.inventory for assoc in self.inventory_associations]
 
 
 
@@ -63,3 +72,28 @@ class Mechanic(Base):
     email: Mapped[str] = mapped_column(db.String(255), nullable=False, unique=True)
     salary: Mapped[float] = mapped_column(db.Float, nullable=False)
     service_tickets: Mapped[List[Service_Ticket]] = db.relationship(secondary=service_mechanic, back_populates="mechanics")
+
+
+class Inventory(Base):
+    __tablename__ = "inventory"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(db.String(255), nullable=False)
+    price: Mapped[float] = mapped_column(db.Float, nullable=False)
+    quantity: Mapped[int] = mapped_column(db.Integer, nullable=False, default=0)
+
+    service_ticket_associations: Mapped[List["ServiceTicketInventory"]] = db.relationship(
+    "ServiceTicketInventory",
+    back_populates="inventory",
+    cascade="all, delete-orphan"
+)
+
+
+class ServiceTicketInventory(Base):
+    __tablename__ = "service_ticket_inventory"
+
+    service_ticket_id = mapped_column(db.ForeignKey("service_tickets.id"), primary_key=True)
+    inventory_id = mapped_column(db.ForeignKey("inventory.id"), primary_key=True)
+    quantity = mapped_column(db.Integer, nullable=False, default=1)
+
+    service_ticket = db.relationship("Service_Ticket", back_populates="inventory_associations")
+    inventory = db.relationship("Inventory", back_populates="service_ticket_associations")
