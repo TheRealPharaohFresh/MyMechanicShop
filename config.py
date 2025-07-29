@@ -5,7 +5,10 @@ class DevelopmentConfig:
     CACHE_DEFAULT_TIMEOUT = 300  # Cache timeout in seconds
 
 class TestingConfig:
-    pass
-
+    SQLALCHEMY_DATABASE_URI = 'mysql+mysqlconnector://testuser:testpass@127.0.0.1:3306/mechanicshop_test'
+    TESTING = True
+    DEBUG = False
+    CACHE_TYPE = 'SimpleCache'
+    CACHE_DEFAULT_TIMEOUT = 1  # Usually shorter timeout for tests
 class ProductionConfig:
     pass
