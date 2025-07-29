@@ -2,7 +2,7 @@ from app import create_app
 from app.models import db
 from sqlalchemy import text
 
-app = create_app('DevelopmentConfig')
+app = create_app('ProductionConfig')
 
 with app.app_context():
     # Disable foreign key checks using a raw connection and commit right after
