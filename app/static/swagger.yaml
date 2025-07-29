@@ -1,0 +1,1392 @@
+swagger: '2.0'
+info:
+  title: "MyMechanicShop API"
+  description: "API to manage a Mechanic Shop"
+  version: "1.0.0"
+host: "127.0.0.1:5000"
+schemes:
+  - "http"
+consumes:
+  - "application/json"
+produces:
+  - "application/json"
+
+securityDefinitions:
+  bearerAuth:
+    type: apiKey
+    name: Authorization
+    in: header
+
+paths:
+  /customers/login:
+    post:
+      tags:
+        - Customers
+      summary: "Login Endpoint (generates JWT token)" 
+      description: "Validates customer credentials and returns a JWT token for authenticated access."
+      parameters:
+        - in: body
+          name: body
+          description: "Customer login credentials"
+          required: true
+          schema:
+            $ref: '#/definitions/LoginCredentials'
+      responses:
+        '200':
+          description: "Login successful"
+          schema:
+            $ref: '#/definitions/LoginResponse'
+          examples:
+            application/json:
+              status: "success"
+              message: "Welcome Inside The Egyptian Pyramids"
+              token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        '401':
+          description: "Invalid credentials"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Invalid email or password"
+
+  /customers:
+    post:
+      tags:
+        - Customers
+      summary: "Create a new customer"
+      description: "Creates a new customer in the system."
+      parameters:
+        - in: body
+          name: body
+          description: "Customer details"
+          required: true
+          schema:
+            $ref: '#/definitions/CreateCustomer'
+      responses:
+        '201':
+          description: "Customer created successfully"
+          schema:
+            $ref: '#/definitions/CreateCustomerResponse'
+          examples:
+            application/json:
+              id: 101
+              name: "Pharaoh Fresh"
+              email: "pharaoh@example.com"
+              phone: "404-123-4567"
+        '400':
+          description: "Validation error or customer already exists"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Customer already exists"
+
+    get:
+      tags:
+        - Customers
+      summary: "Get all customers"
+      description: "Retrieves a paginated list of all customers."
+      parameters:
+        - in: query
+          name: page
+          type: integer
+          description: "Page number"
+        - in: query
+          name: per_page
+          type: integer
+          description: "Number of customers per page"
+      responses:
+        '200':
+          description: "List of customers"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/GetCustomerResponse'
+          examples:
+            application/json:
+              - id: 101
+                name: "Pharaoh Fresh"
+                email: "pharaoh@example.com"
+                phone: "404-123-4567"
+              - id: 102
+                name: "Cleopatra Vibes"
+                email: "cleo@example.com"
+                phone: "678-999-8212"
+
+  /customers/{customer_id}:
+    get:
+      tags:
+        - Customers
+      summary: "Get a customer by ID"
+      description: "Retrieves a customer by their unique ID."
+      parameters:
+        - in: path
+          name: customer_id
+          required: true
+          type: integer
+          description: "ID of the customer to retrieve"
+      responses:
+        '200':
+          description: "Customer details"
+          schema:
+            $ref: '#/definitions/GetCustomerByIdResponse'
+          examples:
+            application/json:
+              id: 101
+              name: "Pharaoh Fresh"
+              email: "pharaoh@example.com"
+              phone: "404-123-4567"
+        '404':
+          description: "Customer not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Customer not found"
+
+    put:
+      tags:
+        - Customers
+      summary: "Update a customer by ID"
+      description: "Updates the details of a specific customer."
+      security:
+        - bearerAuth: []t
+      parameters:
+        - in: path
+          name: customer_id
+          required: true
+          type: integer
+          description: "ID of the customer to update"
+        - in: body
+          name: body
+          description: "Updated customer details"
+          required: true
+          schema:
+            $ref: '#/definitions/UpdateCustomer'
+      responses:
+        '200':
+          description: "Customer updated successfully"
+          schema:
+            $ref: '#/definitions/UpdateCustomerResponse'
+          examples:
+            application/json:
+              id: 101
+              name: "Pharaoh Fresh Updated"
+              email: "newemail@example.com"
+              phone: "470-987-6543"
+        '400':
+          description: "Validation error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Validation error"
+        '404':
+          description: "Customer not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Customer not found"
+
+    delete:
+      tags:
+        - Customers
+      summary: "Delete a customer by ID"
+      description: "Deletes a specific customer by their ID."
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: customer_id
+          required: true
+          type: integer
+          description: "ID of the customer to delete"
+      responses:
+        '204':
+          description: "Customer deleted successfully"
+        '404':
+          description: "Customer not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Customer not found"
+
+
+  /inventory:
+    post:
+      tags:
+        - Inventory
+      summary: "Create a new inventory item"
+      description: "Adds a new inventory item to the system."
+      parameters:
+        - in: body
+          name: body
+          description: "Inventory item details"
+          required: true
+          schema:
+            $ref: '#/definitions/InventoryCreate'
+      responses:
+        '201':
+          description: "Inventory item created successfully"
+          schema:
+            $ref: '#/definitions/Inventory'
+          examples:
+            application/json:
+              id: 3
+              name: "Brake Pads"
+              price: 29.99
+              quantity: 50
+        '400':
+          description: "Validation error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Invalid input data"
+
+    get:
+      tags:
+        - Inventory
+      summary: "Get all inventory items"
+      description: "Retrieves a list of all inventory items."
+      responses:
+        '200':
+          description: "List of inventory items"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Inventory'
+          examples:
+            application/json:
+              - id: 1
+                name: "Oil Filter"
+                price: 10.50
+                quantity: 100
+              - id: 2
+                name: "Spark Plug"
+                price: 5.25
+                quantity: 200
+
+  /inventory/{inventory_id}:
+    get:
+      tags:
+        - Inventory
+      summary: "Get inventory item by ID"
+      description: "Retrieve details of a specific inventory item."
+      parameters:
+        - in: path
+          name: inventory_id
+          required: true
+          type: integer
+          description: "ID of the inventory item"
+      responses:
+        '200':
+          description: "Inventory item details"
+          schema:
+            $ref: '#/definitions/Inventory'
+          examples:
+            application/json:
+              id: 3
+              name: "Brake Pads"
+              price: 29.99
+              quantity: 50
+        '404':
+          description: "Inventory item not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Inventory item not found"
+
+    put:
+      tags:
+        - Inventory
+      summary: "Update inventory item"
+      description: "Updates details of a specific inventory item."
+      parameters:
+        - in: path
+          name: inventory_id
+          required: true
+          type: integer
+          description: "ID of the inventory item to update"
+        - in: body
+          name: body
+          description: "Updated inventory item data"
+          required: true
+          schema:
+            $ref: '#/definitions/InventoryUpdate'
+      responses:
+        '200':
+          description: "Inventory item updated successfully"
+          schema:
+            $ref: '#/definitions/Inventory'
+          examples:
+            application/json:
+              id: 3
+              name: "Brake Pads - Premium"
+              price: 34.99
+              quantity: 45
+        '400':
+          description: "Validation error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Invalid input data"
+        '404':
+          description: "Inventory item not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Inventory item not found"
+
+    delete:
+      tags:
+        - Inventory
+      summary: "Delete an inventory item"
+      description: "Removes an inventory item by ID."
+      parameters:
+        - in: path
+          name: inventory_id
+          required: true
+          type: integer
+          description: "ID of the inventory item to delete"
+      responses:
+        '200':
+          description: "Inventory item deleted successfully"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Inventory item deleted"
+        '404':
+          description: "Inventory item not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Inventory item not found"
+
+  /inventory/{inventory_id}/usage:
+    post:
+      tags:
+        - Inventory
+      summary: "Add usage to an inventory item"
+      description: "Deducts quantity from an inventory item."
+      parameters:
+        - in: path
+          name: inventory_id
+          required: true
+          type: integer
+          description: "ID of the inventory item"
+        - in: body
+          name: body
+          description: "Usage data (quantity to deduct)"
+          required: true
+          schema:
+            $ref: '#/definitions/InventoryUsage'
+      responses:
+        '200':
+          description: "Inventory quantity deducted successfully"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "5 items deducted from inventory"
+        '400':
+          description: "Invalid input or insufficient inventory"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Insufficient inventory"
+        '404':
+          description: "Inventory item not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Inventory item not found"
+
+
+  /mechanics:
+    post:
+      tags:
+        - Mechanics
+      summary: "Create a new mechanic"
+      description: "Adds a new mechanic to the system."
+      parameters:
+        - in: body
+          name: body
+          description: "Mechanic details"
+          required: true
+          schema:
+            $ref: '#/definitions/MechanicCreate'
+      responses:
+        '201':
+          description: "Mechanic created successfully"
+          schema:
+            $ref: '#/definitions/Mechanic'
+          examples:
+            application/json:
+              id: 10
+              name: "John Doe"
+              phone: "555-123-4567"
+              email: "johndoe@example.com"
+              salary: 55000.00
+        '400':
+          description: "Validation error or mechanic already exists"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Mechanic already exists"
+
+    get:
+      tags:
+        - Mechanics
+      summary: "Get all mechanics"
+      description: "Retrieves a paginated list of all mechanics."
+      parameters:
+        - in: query
+          name: page
+          type: integer
+          description: "Page number"
+        - in: query
+          name: per_page
+          type: integer
+          description: "Number of mechanics per page"
+      responses:
+        '200':
+          description: "List of mechanics"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Mechanic'
+          examples:
+            application/json:
+              - id: 10
+                name: "John Doe"
+                phone: "555-123-4567"
+                email: "johndoe@example.com"
+                salary: 55000.00
+              - id: 11
+                name: "Jane Smith"
+                phone: "555-987-6543"
+                email: "janesmith@example.com"
+                salary: 60000.00
+
+  /mechanics/{mechanic_id}:
+    get:
+      tags:
+        - Mechanics
+      summary: "Get mechanic by ID"
+      description: "Retrieve details of a specific mechanic."
+      parameters:
+        - in: path
+          name: mechanic_id
+          required: true
+          type: integer
+          description: "ID of the mechanic"
+      responses:
+        '200':
+          description: "Mechanic details"
+          schema:
+            $ref: '#/definitions/Mechanic'
+          examples:
+            application/json:
+              id: 10
+              name: "John Doe"
+              phone: "555-123-4567"
+              email: "johndoe@example.com"
+              salary: 55000.00
+        '404':
+          description: "Mechanic not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Mechanic not found"
+
+    put:
+      tags:
+        - Mechanics
+      summary: "Update a mechanic"
+      description: "Updates details of a specific mechanic."
+      parameters:
+        - in: path
+          name: mechanic_id
+          required: true
+          type: integer
+          description: "ID of the mechanic to update"
+        - in: body
+          name: body
+          description: "Updated mechanic data"
+          required: true
+          schema:
+            $ref: '#/definitions/MechanicUpdate'
+      responses:
+        '200':
+          description: "Mechanic updated successfully"
+          schema:
+            $ref: '#/definitions/Mechanic'
+          examples:
+            application/json:
+              id: 10
+              name: "John Doe Updated"
+              phone: "555-123-4567"
+              email: "johnupdated@example.com"
+              salary: 58000.00
+        '400':
+          description: "Validation error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Validation error"
+        '404':
+          description: "Mechanic not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Mechanic not found"
+
+    delete:
+      tags:
+        - Mechanics
+      summary: "Delete a mechanic"
+      description: "Deletes a mechanic by ID."
+      parameters:
+        - in: path
+          name: mechanic_id
+          required: true
+          type: integer
+          description: "ID of the mechanic to delete"
+      responses:
+        '204':
+          description: "Mechanic deleted successfully"
+        '404':
+          description: "Mechanic not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Mechanic not found"
+
+  /mechanics/popular:
+    get:
+      tags:
+        - Mechanics
+      summary: "Get most popular mechanics"
+      description: "Retrieves top 5 mechanics with the most service tickets."
+      responses:
+        '200':
+          description: "Top 5 mechanics"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Mechanic'
+          examples:
+            application/json:
+              - id: 12
+                name: "Mike Strong"
+                phone: "555-111-2222"
+                email: "mikestrong@example.com"
+                salary: 70000.00
+              - id: 10
+                name: "John Doe"
+                phone: "555-123-4567"
+                email: "johndoe@example.com"
+                salary: 55000.00
+
+  /mechanics/search:
+    get:
+      tags:
+        - Mechanics
+      summary: "Search mechanics by name"
+      description: "Searches mechanics by partial or full name match."
+      parameters:
+        - in: query
+          name: name
+          type: string
+          description: "Name or partial name to search"
+      responses:
+        '200':
+          description: "Matching mechanics"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Mechanic'
+          examples:
+            application/json:
+              - id: 11
+                name: "Jane Smith"
+                phone: "555-987-6543"
+                email: "janesmith@example.com"
+                salary: 60000.00
+        '404':
+          description: "No mechanics found"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "No mechanics found"
+
+  /service-tickets:
+    post:
+      tags:
+        - ServiceTickets
+      summary: "Create a new service ticket"
+      description: "Creates a service ticket with associated mechanics and parts, deducting inventory accordingly."
+      parameters:
+        - in: body
+          name: body
+          description: "Service ticket data including mechanic IDs and parts"
+          required: true
+          schema:
+            $ref: '#/definitions/ServiceTicketCreate'
+      responses:
+        '201':
+          description: "Service ticket created"
+          schema:
+            $ref: '#/definitions/ServiceTicket'
+          examples:
+            application/json:
+              id: 1001
+              customer_id: 101
+              service_date: "2025-07-28"
+              description: "Brake repair and oil change"
+              vin: "1HGCM82633A004352"
+              mechanics:
+                - id: 10
+                  name: "John Doe"
+                  email: "johndoe@example.com"
+              inventory_associations:
+                - inventory_id: 5
+                  quantity: 2
+        '400':
+          description: "Validation error or stock issues"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Not enough stock for inventory item Brake Pads"
+
+    get:
+      tags:
+        - ServiceTickets
+      summary: "Get all service tickets"
+      description: "Retrieve all service tickets."
+      responses:
+        '200':
+          description: "List of service tickets"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ServiceTicket'
+          examples:
+            application/json:
+              - id: 1001
+                customer_id: 101
+                service_date: "2025-07-28"
+                description: "Brake repair"
+                vin: "1HGCM82633A004352"
+              - id: 1002
+                customer_id: 102
+                service_date: "2025-07-25"
+                description: "Tire replacement"
+                vin: "1HGCM82633A004353"
+
+  /service-tickets/{ticket_id}:
+    get:
+      tags:
+        - ServiceTickets
+      summary: "Get a service ticket by ID"
+      parameters:
+        - in: path
+          name: ticket_id
+          required: true
+          type: integer
+          description: "ID of the service ticket"
+      responses:
+        '200':
+          description: "Service ticket details"
+          schema:
+            $ref: '#/definitions/ServiceTicket'
+          examples:
+            application/json:
+              id: 1001
+              customer_id: 101
+              service_date: "2025-07-28"
+              description: "Brake repair"
+              vin: "1HGCM82633A004352"
+        '404':
+          description: "Service ticket not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Service ticket not found"
+
+    delete:
+      tags:
+        - ServiceTickets
+      summary: "Delete a service ticket"
+      parameters:
+        - in: path
+          name: ticket_id
+          required: true
+          type: integer
+          description: "ID of the service ticket to delete"
+      responses:
+        '204':
+          description: "Service ticket deleted successfully"
+        '404':
+          description: "Service ticket not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Service ticket not found"
+
+  /service-tickets/my-tickets:
+    get:
+      tags:
+        - ServiceTickets
+      summary: "Get logged-in customer's service tickets"
+      description: "Requires authentication token."
+      responses:
+        '200':
+          description: "List of customer's service tickets"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ServiceTicket'
+          examples:
+            application/json:
+              - id: 1001
+                customer_id: 101
+                service_date: "2025-07-28"
+                description: "Brake repair"
+                vin: "1HGCM82633A004352"
+        '404':
+          description: "No service tickets found"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "No service tickets found for this customer"
+
+  /service-tickets/{ticket_id}/mechanics:
+    put:
+      tags:
+        - ServiceTickets
+      summary: "Update mechanics on a service ticket"
+      parameters:
+        - in: path
+          name: ticket_id
+          required: true
+          type: integer
+          description: "ID of the service ticket"
+        - in: body
+          name: body
+          description: "List of mechanic IDs to assign"
+          required: true
+          schema:
+            type: object
+            properties:
+              mechanic_ids:
+                type: array
+                items:
+                  type: integer
+                example: [10, 12]
+      responses:
+        '200':
+          description: "Service ticket updated"
+          schema:
+            $ref: '#/definitions/ServiceTicket'
+        '400':
+          description: "Validation error"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "mechanic_ids must be a list"
+        '404':
+          description: "Service ticket not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Service ticket not found"
+
+    get:
+      tags:
+        - ServiceTickets
+      summary: "Get mechanics assigned to a service ticket"
+      parameters:
+        - in: path
+          name: ticket_id
+          required: true
+          type: integer
+          description: "ID of the service ticket"
+      responses:
+        '200':
+          description: "List of mechanics"
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/MechanicBasic'
+          examples:
+            application/json:
+              - id: 10
+                name: "John Doe"
+                email: "johndoe@example.com"
+              - id: 12
+                name: "Jane Smith"
+                email: "janesmith@example.com"
+        '404':
+          description: "Service ticket not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Service ticket not found"
+
+  /service-tickets/{ticket_id}/mechanics/{mechanic_id}:
+    delete:
+      tags:
+        - ServiceTickets
+      summary: "Remove mechanic from service ticket"
+      parameters:
+        - in: path
+          name: ticket_id
+          required: true
+          type: integer
+        - in: path
+          name: mechanic_id
+          required: true
+          type: integer
+      responses:
+        '200':
+          description: "Mechanic removed from service ticket"
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            application/json:
+              message: "Mechanic removed from service ticket"
+        '400':
+          description: "Mechanic not assigned to this ticket"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Mechanic not assigned to this ticket"
+        '404':
+          description: "Service ticket or mechanic not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+          examples:
+            application/json:
+              error: "Service ticket not found"
+
+  /service-tickets/{ticket_id}/inventory:
+    put:
+      tags:
+        - ServiceTickets
+      summary: "Update inventory parts on a service ticket"
+      description: "Add or remove inventory parts with stock adjustments."
+      parameters:
+        - in: path
+          name: ticket_id
+          required: true
+          type: integer
+        - in: body
+          name: body
+          description: "Inventory update data"
+          required: true
+          schema:
+            $ref: '#/definitions/ServiceTicketInventoryUpdate'
+      responses:
+        '200':
+          description: "Service ticket updated"
+          schema:
+            $ref: '#/definitions/ServiceTicket'
+        '400':
+          description: "Validation error or stock issues"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+        '404':
+          description: "Service ticket or inventory item not found"
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+
+
+
+definitions:
+  LoginCredentials:
+    type: object
+    required:
+      - email
+      - password
+    properties:
+      email:
+        type: string
+        example: "customer@example.com"
+      password:
+        type: string
+        example: "password123"
+
+  LoginResponse:
+    type: object
+    properties:
+      status:
+        type: string
+        example: "success"
+      message:
+        type: string
+        example: "Welcome Inside The Egyptian Pyramids"
+      token:
+        type: string
+        example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+  CreateCustomer:
+    type: object
+    required:
+      - name
+      - email
+      - password
+    properties:
+      name:
+        type: string
+        example: "Pharaoh Fresh"
+      email:
+        type: string
+        example: "pharaoh@example.com"
+      phone:
+        type: string
+        example: "404-123-4567"
+      password:
+        type: string
+        example: "goldenpyramid123"
+
+  CreateCustomerResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 101
+      name:
+        type: string
+        example: "Pharaoh Fresh"
+      email:
+        type: string
+        example: "pharaoh@example.com"
+      phone:
+        type: string
+        example: "404-123-4567"
+
+  GetCustomerResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 101
+      name:
+        type: string
+        example: "Pharaoh Fresh"
+      email:
+        type: string
+        example: "pharaoh@example.com"
+      phone:
+        type: string
+        example: "404-123-4567"
+
+  GetCustomerByIdResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 101
+      name:
+        type: string
+        example: "Pharaoh Fresh"
+      email:
+        type: string
+        example: "pharaoh@example.com"
+      phone:
+        type: string
+        example: "404-123-4567"
+
+  UpdateCustomer:
+    type: object
+    properties:
+      name:
+        type: string
+        example: "Pharaoh Fresh Updated"
+      email:
+        type: string
+        example: "newemail@example.com"
+      phone:
+        type: string
+        example: "470-987-6543"
+      password:
+        type: string
+        example: "newsecurepassword"
+
+  UpdateCustomerResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 101
+      name:
+        type: string
+        example: "Pharaoh Fresh Updated"
+      email:
+        type: string
+        example: "newemail@example.com"
+      phone:
+        type: string
+        example: "470-987-6543"
+
+  DeleteCustomerByIdResponse:
+    type: object
+    properties:
+      message:
+        type: string
+        example: "Customer deleted successfully"
+
+
+  Inventory:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 3
+      name:
+        type: string
+        example: "Brake Pads"
+      price:
+        type: number
+        format: float
+        example: 29.99
+      quantity:
+        type: integer
+        example: 50
+
+  InventoryCreate:
+    type: object
+    required:
+      - name
+      - price
+      - quantity
+    properties:
+      name:
+        type: string
+        example: "Brake Pads"
+      price:
+        type: number
+        format: float
+        example: 29.99
+      quantity:
+        type: integer
+        example: 50
+
+  InventoryUpdate:
+    type: object
+    properties:
+      name:
+        type: string
+        example: "Brake Pads - Premium"
+      price:
+        type: number
+        format: float
+        example: 34.99
+      quantity:
+        type: integer
+        example: 45
+
+  InventoryUsage:
+    type: object
+    required:
+      - quantity
+    properties:
+      quantity:
+        type: integer
+        example: 5
+
+  DeleteInventoryResponse:
+    type: object
+    properties:
+      message:
+        type: string
+        example: "Inventory item id: 123 Was Deleted Successfully"
+
+
+
+  Mechanic:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 10
+      name:
+        type: string
+        example: "John Doe"
+      phone:
+        type: string
+        example: "555-123-4567"
+      email:
+        type: string
+        example: "johndoe@example.com"
+      salary:
+        type: number
+        format: float
+        example: 55000.00
+
+  MechanicCreate:
+    type: object
+    required:
+      - name
+      - phone
+      - email
+      - salary
+    properties:
+      name:
+        type: string
+        example: "John Doe"
+      phone:
+        type: string
+        example: "555-123-4567"
+      email:
+        type: string
+        example: "johndoe@example.com"
+      salary:
+        type: number
+        format: float
+        example: 55000.00
+
+  MechanicUpdate:
+    type: object
+    properties:
+      name:
+        type: string
+        example: "John Doe Updated"
+      phone:
+        type: string
+        example: "555-123-4567"
+      email:
+        type: string
+        example: "johnupdated@example.com"
+      salary:
+        type: number
+        format: float
+        example: 58000.00
+
+
+  ServiceTicket:
+    type: object
+    properties:
+      id:
+        type: integer
+        example: 1001
+      customer_id:
+        type: integer
+        example: 101
+      service_date:
+        type: string
+        format: date
+        example: "2025-07-28"
+      description:
+        type: string
+        example: "Brake repair and oil change"
+      vin:
+        type: string
+        example: "1HGCM82633A004352"
+      mechanics:
+        type: array
+        items:
+          $ref: '#/definitions/MechanicBasic'
+      inventory_associations:
+        type: array
+        items:
+          type: object
+          properties:
+            inventory_id:
+              type: integer
+              example: 5
+            quantity:
+              type: integer
+              example: 2
+
+  ServiceTicketCreate:
+    type: object
+    required:
+      - customer_id
+      - service_date
+      - description
+      - vin
+    properties:
+      customer_id:
+        type: integer
+        example: 101
+      service_date:
+        type: string
+        format: date
+        example: "2025-07-28"
+      description:
+        type: string
+        example: "Brake repair and oil change"
+      vin:
+        type: string
+        example: "1HGCM82633A004352"
+      mechanic_ids:
+        type: array
+        items:
+          type: integer
+        example: [10, 12]
+      parts:
+        type: array
+        items:
+          type: object
+          properties:
+            inventory_id:
+              type: integer
+              example: 5
+            quantity:
+              type: integer
+              example: 2
+
+  ServiceTicketInventoryUpdate:
+    type: object
+    properties:
+      add_parts:
+        type: array
+        items:
+          type: object
+          properties:
+            inventory_id:
+              type: integer
+              example: 5
+            quantity:
+              type: integer
+              example: 1
+      remove_parts:
+        type: array
+        items:
+          type: object
+          properties:
+            inventory_id:
+              type: integer
+              example: 5
+            quantity:
+              type: integer
+              example: 1
+
+
+
