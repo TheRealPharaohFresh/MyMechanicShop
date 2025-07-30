@@ -3,7 +3,7 @@ info:
   title: "MyMechanicShop API"
   description: "API to manage a Mechanic Shop"
   version: "1.0.0"
-host: "mymechanicshop.onrender.com"
+  host: "mymechanicshop.onrender.com"
 schemes:
   - "https"
 consumes:
