@@ -159,7 +159,7 @@ paths:
       summary: "Update a customer by ID"
       description: "Updates the details of a specific customer."
       security:
-        - bearerAuth: []t
+        - bearerAuth: []
       parameters:
         - in: path
           name: customer_id
