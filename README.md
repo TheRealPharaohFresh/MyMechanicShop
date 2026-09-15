@@ -48,14 +48,14 @@ MyMechanicShop/
 │   │   ├── mechanic/           # Mechanic routes & schemas
 │   │   ├── service\_ticket/     # Ticket routes, logic, rate limiting
 │   │   └── inventory/          # Inventory CRUD + caching
-│   ├── utils/                  # Auth, DB init, decorators, extensions
+│   ├── static/swagger.yaml     # OpenAPI documentation
+│   ├── utils/                  # Shared utilities
 │   ├── models.py               # SQLAlchemy models
-│   └── **init**.py             # App factory
+│   └── __init__.py             # App factory
 │
-├── tests/                      # Pytest unit tests (CRUD & logic)
-├── swagger.yaml                # OpenAPI 2.0 documentation
+├── tests/                      # unittest test suite
 ├── config.py                   # App config (DB URI, secrets, etc.)
-├── run.py                      # App entry point
+├── flask_app.py                # Optional database initialization entry point
 ├── requirements.txt            # Dependencies
 └── README.md                   # You're here!
 
@@ -108,12 +108,12 @@ Token is returned upon successful customer registration/login.
 |                     | `/customers/<id>`                   | GET / PUT / DELETE | CRUD for specific customer                 |
 | **Mechanics**       | `/mechanics`                        | GET / POST         | List or add new mechanic                   |
 |                     | `/mechanics/<id>`                   | GET / PUT / DELETE | CRUD for specific mechanic                 |
-| **Service Tickets** | `/tickets`                          | GET / POST         | List or create service tickets             |
-|                     | `/tickets/<id>`                     | GET / PUT / DELETE | Manage specific ticket                     |
-|                     | `/tickets/my-tickets`               | GET                | Get current user's tickets                 |
-|                     | `/tickets/<id>/mechanics`           | PUT / GET          | Bulk update or view mechanics for a ticket |
-|                     | `/tickets/<id>/mechanics/<mech_id>` | DELETE             | Remove specific mechanic from ticket       |
-|                     | `/tickets/<id>/inventory`           | PUT                | Add or remove inventory on ticket          |
+| **Service Tickets** | `/service_tickets`                          | GET / POST         | List or create service tickets             |
+|                     | `/service_tickets/<id>`                     | GET / PUT / DELETE | Manage specific ticket                     |
+|                     | `/service_tickets/my-tickets`               | GET                | Get current user's tickets                 |
+|                     | `/service_tickets/<id>/mechanics`           | PUT / GET          | Bulk update or view mechanics for a ticket |
+|                     | `/service_tickets/<id>/mechanics/<mech_id>` | DELETE             | Remove specific mechanic from ticket       |
+|                     | `/service_tickets/<id>/inventory`            | PUT                | Add or remove inventory on ticket          |
 | **Inventory**       | `/inventory`                        | GET / POST         | List (cached) / add inventory              |
 |                     | `/inventory/<id>`                   | GET / PUT / DELETE | CRUD for specific inventory item           |
 
@@ -121,35 +121,50 @@ Token is returned upon successful customer registration/login.
 
 ## ⚙️ Setup & Running
 
-1. **Clone the repo:**
+1. **Clone the repository:**
 
 ```bash
 git clone https://github.com/TheRealPharaohFresh/MyMechanicShop.git
 cd MyMechanicShop
 ```
 
-2. **Install dependencies:**
+2. **Create and activate a virtual environment:**
 
 ```bash
-pip install -r requirements.txt
+python3 -m venv venv
+source venv/bin/activate
 ```
 
-3. **Run the server:**
+On Windows, activate it with `venv\\Scripts\\activate` instead.
+
+3. **Install dependencies:**
 
 ```bash
-python run.py
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+4. **Run the Flask development server:**
+
+```bash
+flask --app app run --debug
 ```
 
 API will be running at: [http://localhost:5000](http://localhost:5000)
+The Swagger UI is available at [http://localhost:5000/api/docs](http://localhost:5000/api/docs).
+
+The Flask app uses an in-memory SQLite database by default when started through
+the app factory. For a persistent database, set `SQLALCHEMY_DATABASE_URI` and
+start the app with the matching configuration before running Flask.
 
 ---
 
 ## 🧪 Tests
 
-Run unit tests using:
+With the virtual environment activated, run the unit tests using:
 
 ```bash
-pytest tests/
+python -m unittest discover -s tests -p 'test_*.py'
 ```
 
 Covers:
@@ -165,7 +180,7 @@ Covers:
 
 Live interactive docs available using [Swagger Editor](https://editor.swagger.io/):
 
-* Import `swagger.yaml` for full endpoint documentation
+* Import `app/static/swagger.yaml` for full endpoint documentation
 * Browse request/response structure and models
 
 ---
@@ -174,9 +189,9 @@ Live interactive docs available using [Swagger Editor](https://editor.swagger.io
 
 | Endpoint                      | Limit     |
 | ----------------------------- | --------- |
-| PUT `/tickets/<id>/mechanics` | 3 per day |
-| PUT `/tickets/<id>/inventory` | 3 per day |
-| DELETE `/tickets/<id>`        | 5 per day |
+| PUT `/service_tickets/<id>/mechanics` | 3 per day |
+| PUT `/service_tickets/<id>/inventory` | 3 per day |
+| DELETE `/service_tickets/<id>`         | 5 per day |
 
 ---
 
