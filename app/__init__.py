@@ -31,21 +31,33 @@ swaggerui_blueprint = get_swaggerui_blueprint(
 def create_app(config_name=None, testing=False):
     app = Flask(__name__)
 
-    # Testing mode
+    # Determine configuration
     if testing:
-        app.config['TESTING'] = True
-        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-
-    # Development / Production mode
+        config_class = 'TestingConfig'
     else:
         config_class = config_name or 'DevelopmentConfig'
 
-        app.config.from_object(
-            f'config.{config_class}'
-        )
+        config_map = {
+            'development': 'DevelopmentConfig',
+            'testing': 'TestingConfig',
+            'production': 'ProductionConfig',
+            'DevelopmentConfig': 'DevelopmentConfig',
+            'TestingConfig': 'TestingConfig',
+            'ProductionConfig': 'ProductionConfig',
+        }
 
-        database_uri = os.getenv('SQLALCHEMY_DATABASE_URI')
+        config_class = config_map.get(config_class, config_class)
 
+    # Load configuration
+    app.config.from_object(f'config.{config_class}')
+
+    # Use environment database URL when available
+    database_uri = os.getenv('SQLALCHEMY_DATABASE_URI')
+
+    if testing:
+        if database_uri:
+            app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
+    else:
         if not database_uri:
             raise RuntimeError(
                 'SQLALCHEMY_DATABASE_URI is not set. '
