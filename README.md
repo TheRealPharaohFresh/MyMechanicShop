@@ -13,6 +13,7 @@
 - [🔐 Authentication](#-authentication)
 - [📦 API Endpoints](#-api-endpoints)
 - [⚙️ Setup & Running](#️-setup--running)
+- [🌱 Database Seeding](#-database-seeding)
 - [🧪 Tests](#-tests)
 - [📄 Swagger API Docs](#-swagger-api-docs)
 - [🚧 Rate Limiting](#-rate-limiting)
@@ -30,8 +31,8 @@
 - **JWT (python-jose)** – Secure token-based authentication
 - **Flask-Limiter** – Built-in rate limiting
 - **Flask-Caching** – Caches inventory GET requests
-- **SQLite** (Dev) – Easily swappable with PostgreSQL or MySQL
-- **Pytest** – Unit testing
+- **PostgreSQL/MySQL** – Configured through `SQLALCHEMY_DATABASE_URI`
+- **unittest** – Unit testing
 - **Swagger (OpenAPI)** – API documentation (`swagger.yaml`)
 
 ---
@@ -56,6 +57,7 @@ MyMechanicShop/
 ├── tests/                      # unittest test suite
 ├── config.py                   # App config (DB URI, secrets, etc.)
 ├── flask_app.py                # Optional database initialization entry point
+├── seed.py                     # Repeatable sample database seed
 ├── requirements.txt            # Dependencies
 └── README.md                   # You're here!
 
@@ -153,9 +155,33 @@ flask --app app run --debug
 API will be running at: [http://localhost:5000](http://localhost:5000)
 The Swagger UI is available at [http://localhost:5000/api/docs](http://localhost:5000/api/docs).
 
-The Flask app uses an in-memory SQLite database by default when started through
-the app factory. For a persistent database, set `SQLALCHEMY_DATABASE_URI` and
-start the app with the matching configuration before running Flask.
+Set `SQLALCHEMY_DATABASE_URI` in your environment before starting the app. The
+application loads this value for local development and Render deployments.
+
+---
+
+## 🌱 Database Seeding
+
+The production entry point creates any missing tables and runs `seed.py` when
+the service starts. The seed is safe to run repeatedly: existing customers,
+mechanics, inventory items, and service tickets are detected using stable
+identifiers instead of being duplicated.
+
+The sample data includes:
+
+* 5 customers
+* 4 mechanics
+* 10 inventory items
+* 8 service tickets with mechanic and inventory associations
+
+To seed a configured local or Render database manually:
+
+```bash
+python seed.py
+```
+
+Render should use `flask_app.py` as its application entry point so table
+creation and seeding happen before the server starts.
 
 ---
 
